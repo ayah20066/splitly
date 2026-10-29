@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0E7C66">
+<title>Splitly</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#EFF6F2;--card:#FFFFFF;--ink:#10302B;--mute:#587069;--line:#D5E4DD;--accent:#0E7C66;--on:#FFFFFF;--res:#FF7A59;--res-ink:#2B0E05;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0C1F1B;--card:#143029;--ink:#E6F4EF;--mute:#93B3AA;--line:#24473E;--accent:#4FD1B2;--on:#06201A}}
+:root[data-theme="dark"]{--bg:#0C1F1B;--card:#143029;--ink:#E6F4EF;--mute:#93B3AA;--line:#24473E;--accent:#4FD1B2;--on:#06201A}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
+main{max-width:480px;margin:0 auto;padding:20px 18px 48px}
+.top{display:flex;gap:8px;justify-content:flex-end;margin-bottom:6px}
+select{font:inherit;font-size:15px;padding:8px 10px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--ink)}
+h1{font-size:30px;font-weight:800;margin:8px 0 20px;letter-spacing:-.02em}
+.res{background:var(--res);color:var(--res-ink);border-radius:22px;padding:22px 20px;margin-bottom:18px}
+.res .l{font-size:15px;font-weight:600}
+.res .big{font-size:56px;font-weight:800;line-height:1.05;letter-spacing:-.03em;margin:4px 0 6px;overflow-wrap:anywhere}
+.res .d{font-size:15px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px}
+label{display:block;font-weight:600;margin-bottom:8px}
+.amt{display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);border-radius:12px;padding:0 14px}
+.amt input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:inherit;font-size:28px;font-weight:600;padding:12px 0;outline:0}
+.amt:focus-within{border-color:var(--accent)}
+.amt span{font-size:18px;color:var(--mute)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.step{display:flex;align-items:center;gap:14px}
+.step button{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-size:24px;cursor:pointer}
+.step b{font-size:28px;min-width:32px;text-align:center}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font:inherit;font-weight:600;padding:10px 16px;border-radius:999px;border:1.5px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on)}
+.tog{display:flex;align-items:center;gap:10px;font-weight:600;margin:0;cursor:pointer}
+.tog input{width:22px;height:22px;accent-color:var(--accent)}
+.share{width:100%;font:inherit;font-weight:600;font-size:17px;padding:15px;border:0;border-radius:14px;background:var(--accent);color:var(--on);cursor:pointer}
+input:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+#msg{text-align:center;color:var(--mute);margin:10px 0 0;min-height:22px;font-size:14px}
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <select id="lang" aria-label="Language"></select>
+    <select id="cur" aria-label="Currency"></select>
+  </div>
+  <h1 id="h">Splitly</h1>
+  <p id="sub" style="margin:-14px 0 20px;color:var(--mute);font-size:16px"></p>
+  <div class="res" aria-live="polite">
+    <div class="l" id="who"></div>
+    <div class="big" id="per"></div>
+    <div class="d" id="det"></div>
+  </div>
+  <div class="card">
+    <label for="t" id="lAmt"></label>
+    <div class="amt"><input id="t" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0"><span id="sym"></span></div>
+  </div>
+  <div class="card">
+    <div class="row"><label style="margin:0" id="lPpl"></label>
+      <div class="step"><button id="m">−</button><b id="p">2</b><button id="a">+</button></div>
+    </div>
+  </div>
+  <div class="card">
+    <label id="lTip"></label>
+    <div class="chips" id="chips"></div>
+  </div>
+  <div class="card">
+    <label class="tog"><input type="checkbox" id="r"><span id="lRound"></span></label>
+  </div>
+  <button class="share" id="s"></button>
+  <p id="msg"></p>
+</main>
+<script>
+var T={
+fr:{loc:"fr-FR",n:"Français",title:"Partage d’addition",who:"Chacun paie",hint:"Entre le montant de l’addition.",amt:"Montant de l’addition",ppl:"Nombre de personnes",tip:"Pourboire",none:"Aucun",round:"Arrondir à l’unité supérieure",share:"Partager le résultat",first:"Entre d’abord un montant.",copied:"Résultat copié.",det:"Total {total} pour {n} personnes.",detTip:"Total {total} avec {tip} % de pourboire pour {n} personnes.",txt:"Addition de {total} : {per} chacun pour {n} personnes.",less:"Une personne de moins",more:"Une personne de plus"},
+en:{loc:"en-US",n:"English",title:"Split the bill",who:"Each person pays",hint:"Enter the bill amount.",amt:"Bill amount",ppl:"Number of people",tip:"Tip",none:"None",round:"Round up to the next unit",share:"Share the result",first:"Enter an amount first.",copied:"Result copied.",det:"Total {total} for {n} people.",detTip:"Total {total} with a {tip}% tip for {n} people.",txt:"Bill of {total}: {per} each for {n} people.",less:"One person less",more:"One person more"},
+es:{loc:"es-ES",n:"Español",title:"Dividir la cuenta",who:"Cada uno paga",hint:"Introduce el importe de la cuenta.",amt:"Importe de la cuenta",ppl:"Número de personas",tip:"Propina",none:"Ninguna",round:"Redondear a la unidad superior",share:"Compartir el resultado",first:"Introduce primero un importe.",copied:"Resultado copiado.",det:"Total {total} para {n} personas.",detTip:"Total {total} con {tip} % de propina para {n} personas.",txt:"Cuenta de {total}: {per} cada uno entre {n} personas.",less:"Una persona menos",more:"Una persona más"},
+pt:{loc:"pt-BR",n:"Português",title:"Dividir a conta",who:"Cada um paga",hint:"Digite o valor da conta.",amt:"Valor da conta",ppl:"Número de pessoas",tip:"Gorjeta",none:"Nenhuma",round:"Arredondar para cima",share:"Compartilhar o resultado",first:"Digite um valor primeiro.",copied:"Resultado copiado.",det:"Total {total} para {n} pessoas.",detTip:"Total {total} com {tip}% de gorjeta para {n} pessoas.",txt:"Conta de {total}: {per} cada um para {n} pessoas.",less:"Uma pessoa a menos",more:"Uma pessoa a mais"},
+de:{loc:"de-DE",n:"Deutsch",title:"Rechnung teilen",who:"Jeder zahlt",hint:"Gib den Rechnungsbetrag ein.",amt:"Rechnungsbetrag",ppl:"Anzahl der Personen",tip:"Trinkgeld",none:"Keins",round:"Auf die nächste Einheit aufrunden",share:"Ergebnis teilen",first:"Gib zuerst einen Betrag ein.",copied:"Ergebnis kopiert.",det:"Gesamt {total} für {n} Personen.",detTip:"Gesamt {total} mit {tip} % Trinkgeld für {n} Personen.",txt:"Rechnung über {total}: {per} pro Person bei {n} Personen.",less:"Eine Person weniger",more:"Eine Person mehr"},
+it:{loc:"it-IT",n:"Italiano",title:"Dividi il conto",who:"Ognuno paga",hint:"Inserisci l’importo del conto.",amt:"Importo del conto",ppl:"Numero di persone",tip:"Mancia",none:"Nessuna",round:"Arrotonda per eccesso",share:"Condividi il risultato",first:"Inserisci prima un importo.",copied:"Risultato copiato.",det:"Totale {total} per {n} persone.",detTip:"Totale {total} con {tip}% di mancia per {n} persone.",txt:"Conto di {total}: {per} a testa per {n} persone.",less:"Una persona in meno",more:"Una persona in più"},
+nl:{loc:"nl-NL",n:"Nederlands",title:"Rekening delen",who:"Ieder betaalt",hint:"Voer het rekeningbedrag in.",amt:"Rekeningbedrag",ppl:"Aantal personen",tip:"Fooi",none:"Geen",round:"Naar boven afronden",share:"Resultaat delen",first:"Voer eerst een bedrag in.",copied:"Resultaat gekopieerd.",det:"Totaal {total} voor {n} personen.",detTip:"Totaal {total} met {tip}% fooi voor {n} personen.",txt:"Rekening van {total}: {per} per persoon voor {n} personen.",less:"Eén persoon minder",more:"Eén persoon meer"},
+tr:{loc:"tr-TR",n:"Türkçe",title:"Hesabı böl",who:"Kişi başı",hint:"Hesap tutarını gir.",amt:"Hesap tutarı",ppl:"Kişi sayısı",tip:"Bahşiş",none:"Yok",round:"Yukarı yuvarla",share:"Sonucu paylaş",first:"Önce bir tutar gir.",copied:"Sonuç kopyalandı.",det:"{n} kişi için toplam {total}.",detTip:"{n} kişi için %{tip} bahşişle toplam {total}.",txt:"{total} tutarındaki hesap: {n} kişi için kişi başı {per}.",less:"Bir kişi az",more:"Bir kişi fazla"},
+pl:{loc:"pl-PL",n:"Polski",title:"Podziel rachunek",who:"Każdy płaci",hint:"Wpisz kwotę rachunku.",amt:"Kwota rachunku",ppl:"Liczba osób",tip:"Napiwek",none:"Brak",round:"Zaokrąglij w górę",share:"Udostępnij wynik",first:"Najpierw wpisz kwotę.",copied:"Wynik skopiowany.",det:"Razem {total} dla {n} osób.",detTip:"Razem {total} z napiwkiem {tip}% dla {n} osób.",txt:"Rachunek na {total}: {per} na osobę ({n} osób).",less:"Jedna osoba mniej",more:"Jedna osoba więcej"},
+ru:{loc:"ru-RU",n:"Русский",title:"Разделить счёт",who:"Каждый платит",hint:"Введите сумму счёта.",amt:"Сумма счёта",ppl:"Количество человек",tip:"Чаевые",none:"Нет",round:"Округлить вверх",share:"Поделиться результатом",first:"Сначала введите сумму.",copied:"Результат скопирован.",det:"Итого {total} на {n} чел.",detTip:"Итого {total} с чаевыми {tip}% на {n} чел.",txt:"Счёт на {total}: по {per} на {n} чел.",less:"На одного человека меньше",more:"На одного человека больше"},
+ja:{loc:"ja-JP",n:"日本語",title:"割り勘",who:"1人あたり",hint:"会計の金額を入力してください。",amt:"会計の金額",ppl:"人数",tip:"チップ",none:"なし",round:"切り上げる",share:"結果を共有",first:"先に金額を入力してください。",copied:"結果をコピーしました。",det:"合計 {total}（{n}人）",detTip:"チップ{tip}%込みで合計 {total}（{n}人）",txt:"会計 {total}：{n}人で1人 {per}",less:"1人減らす",more:"1人増やす"},
+zh:{loc:"zh-CN",n:"中文",title:"分摊账单",who:"每人支付",hint:"请输入账单金额。",amt:"账单金额",ppl:"人数",tip:"小费",none:"无",round:"向上取整",share:"分享结果",first:"请先输入金额。",copied:"结果已复制。",det:"{n} 人共 {total}。",detTip:"含 {tip}% 小费，{n} 人共 {total}。",txt:"账单 {total}：{n} 人，每人 {per}。",less:"减少一人",more:"增加一人"},
+ko:{loc:"ko-KR",n:"한국어",title:"더치페이",who:"1인당 금액",hint:"계산서 금액을 입력하세요.",amt:"계산서 금액",ppl:"인원 수",tip:"팁",none:"없음",round:"올림",share:"결과 공유",first:"먼저 금액을 입력하세요.",copied:"결과가 복사되었습니다.",det:"{n}명, 총 {total}",detTip:"팁 {tip}% 포함, {n}명, 총 {total}",txt:"계산서 {total}: {n}명이 1인당 {per}",less:"한 명 줄이기",more:"한 명 늘리기"},
+hi:{loc:"hi-IN",n:"हिन्दी",title:"बिल बाँटें",who:"हर कोई देगा",hint:"बिल की राशि दर्ज करें।",amt:"बिल की राशि",ppl:"लोगों की संख्या",tip:"टिप",none:"कोई नहीं",round:"ऊपर की ओर राउंड करें",share:"नतीजा साझा करें",first:"पहले राशि दर्ज करें।",copied:"नतीजा कॉपी हो गया।",det:"{n} लोगों के लिए कुल {total}।",detTip:"{tip}% टिप के साथ {n} लोगों के लिए कुल {total}।",txt:"{total} का बिल: {n} लोगों में प्रति व्यक्ति {per}।",less:"एक व्यक्ति कम",more:"एक व्यक्ति ज़्यादा"},
+ar:{loc:"ar-AE-u-nu-latn",n:"العربية",title:"تقسيم الفاتورة",who:"كل شخص يدفع",hint:"أدخل مبلغ الفاتورة.",amt:"مبلغ الفاتورة",ppl:"عدد الأشخاص",tip:"البقشيش",none:"بدون",round:"التقريب للأعلى",share:"مشاركة النتيجة",first:"أدخل المبلغ أولاً.",copied:"تم نسخ النتيجة.",det:"الإجمالي {total} لـ {n} أشخاص.",detTip:"الإجمالي {total} مع بقشيش {tip}% لـ {n} أشخاص.",txt:"فاتورة بقيمة {total}: {per} لكل شخص ({n} أشخاص).",less:"شخص أقل",more:"شخص أكثر"}
+};
+var CUR=["EUR","USD","GBP","CHF","CAD","BRL","MXN","JPY","TRY","PLN","RUB","CNY","KRW","INR","AED"],DEF={fr:"EUR",en:"USD",es:"EUR",pt:"BRL",de:"EUR",it:"EUR",nl:"EUR",tr:"TRY",pl:"PLN",ru:"RUB",ja:"JPY",zh:"CNY",ko:"KRW",hi:"INR",ar:"AED"};
+var lang="en",cur="USD",people=2,tip=0,$=function(i){return document.getElementById(i)};
+try{var sv=JSON.parse(localStorage.getItem("addition-intl")||"{}");if(T[sv.lang])lang=sv.lang;if(CUR.indexOf(sv.cur)>-1)cur=sv.cur;
+ if(!sv.lang){var b=(navigator.language||"en").slice(0,2);if(T[b]){lang=b;cur=DEF[b]}}}catch(e){var b2=(navigator.language||"en").slice(0,2);if(T[b2]){lang=b2;cur=DEF[b2]}}
+function persist(){try{localStorage.setItem("addition-intl",JSON.stringify({lang:lang,cur:cur}))}catch(e){}}
+function money(n){return new Intl.NumberFormat(T[lang].loc,{style:"currency",currency:cur}).format(n)}
+function f(s,o){return s.replace(/\{(\w+)\}/g,function(_,k){return o[k]})}
+Object.keys(T).forEach(function(k){var o=document.createElement("option");o.value=k;o.textContent=T[k].n;$("lang").appendChild(o)});
+CUR.forEach(function(c){var o=document.createElement("option");o.value=c;o.textContent=c;$("cur").appendChild(o)});
+function labels(){
+  var t=T[lang];document.documentElement.lang=lang;document.documentElement.dir=lang==="ar"?"rtl":"ltr";document.title="Splitly";
+  $("sub").textContent=t.title;$("who").textContent=t.who;$("lAmt").textContent=t.amt;$("lPpl").textContent=t.ppl;
+  $("lTip").textContent=t.tip;$("lRound").textContent=t.round;$("s").textContent=t.share;
+  $("m").setAttribute("aria-label",t.less);$("a").setAttribute("aria-label",t.more);
+  $("lang").value=lang;$("cur").value=cur;
+  $("sym").textContent=new Intl.NumberFormat(t.loc,{style:"currency",currency:cur,currencyDisplay:"narrowSymbol"}).formatToParts(0).filter(function(p){return p.type==="currency"}).map(function(p){return p.value}).join("");
+  $("chips").innerHTML="";
+  [0,5,10,15].forEach(function(v){var b=document.createElement("button");b.className="chip";b.textContent=v?v+(["en","pt","it","nl","pl","ja","zh","ko","hi","ar"].indexOf(lang)>-1?"%":" %"):t.none;b.dataset.v=v;$("chips").appendChild(b)});
+  $("msg").textContent="";calc();
+}
+function calc(){
+  var t=T[lang],total=parseFloat($("t").value)||0,per=total*(1+tip/100)/people;
+  if($("r").checked)per=Math.ceil(per-1e-9);
+  var paid=per*people;
+  Array.prototype.forEach.call($("chips").children,function(c){c.setAttribute("aria-pressed",+c.dataset.v===tip)});
+  $("p").textContent=people;$("per").textContent=money(per);
+  $("det").textContent=total>0?f(tip?t.detTip:t.det,{total:money(paid),tip:tip,n:people}):t.hint;
+  return {per:per,paid:paid};
+}
+$("lang").addEventListener("change",function(){lang=this.value;cur=DEF[lang]||cur;persist();labels()});
+$("cur").addEventListener("change",function(){cur=this.value;persist();labels()});
+$("t").addEventListener("input",calc);
+$("r").addEventListener("change",calc);
+$("m").addEventListener("click",function(){if(people>1){people--;calc()}});
+$("a").addEventListener("click",function(){if(people<50){people++;calc()}});
+$("chips").addEventListener("click",function(e){var b=e.target.closest("button");if(b){tip=+b.dataset.v;calc()}});
+$("s").addEventListener("click",function(){
+  var t=T[lang],r=calc();if(!(r.paid>0)){$("msg").textContent=t.first;return}
+  var txt=f(t.txt,{total:money(r.paid),per:money(r.per),n:people});
+  if(navigator.share){navigator.share({text:txt}).catch(function(){})}
+  else if(navigator.clipboard){navigator.clipboard.writeText(txt).then(function(){$("msg").textContent=t.copied},function(){$("msg").textContent=txt})}
+  else{$("msg").textContent=txt}
+});
+labels();
+try{if("serviceWorker" in navigator&&location.protocol.indexOf("http")===0)navigator.serviceWorker.register("sw.js").catch(function(){})}catch(e){}
+</script>
+</body>
+</html>
